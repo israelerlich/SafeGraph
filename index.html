@@ -1,0 +1,1002 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SafeGraph — Protótipo</title>
+<meta name="description" content="Protótipo conceitual do SafeGraph: proteção, preservação de evidências e acolhimento para vítimas de deepfakes." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SafeGraph — protótipo conceitual (AV2)
+   Paleta e identidade extraídas do carrossel da marca:
+   roxo/lilás + verde-menta, cantos arredondados, tom acolhedor.
+   ============================================================ */
+:root{
+  --violet-950:#1f0f47;
+  --violet-900:#2e1065;
+  --violet-800:#4c1d95;
+  --violet-700:#5b21b6;
+  --violet-600:#6d28d9;
+  --violet-500:#7c3aed;
+  --violet-400:#8b5cf6;
+  --violet-300:#c4b5fd;
+  --violet-200:#ddd6fe;
+  --violet-100:#ede9fe;
+  --violet-50:#f5f3ff;
+
+  --mint-600:#0d9488;
+  --mint-500:#14b8a6;
+  --mint-400:#2dd4bf;
+  --mint-300:#5eead4;
+  --mint-200:#99f6e4;
+  --mint-100:#ccfbf1;
+  --mint-50:#f0fdfa;
+
+  --ink:#241b3a;
+  --ink-soft:#5b5470;
+  --ink-faint:#8b85a0;
+  --line:#ece8f6;
+  --white:#ffffff;
+  --danger:#e11d6b;
+
+  --font-display:'Baloo 2', ui-rounded, system-ui, sans-serif;
+  --font-ui:'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+  --shadow-sm:0 2px 8px rgba(76,29,149,.08);
+  --shadow-md:0 14px 40px -12px rgba(76,29,149,.28);
+  --shadow-lg:0 40px 90px -30px rgba(46,16,101,.45);
+  --r-lg:28px;
+  --r-md:18px;
+  --r-sm:12px;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:var(--font-ui);
+  color:var(--ink);
+  background:
+    radial-gradient(1100px 700px at 12% -8%, #efe9ff 0%, rgba(239,233,255,0) 55%),
+    radial-gradient(1000px 720px at 100% 0%, #e6fbf5 0%, rgba(230,251,245,0) 50%),
+    radial-gradient(900px 900px at 88% 110%, #efe7ff 0%, rgba(239,231,255,0) 55%),
+    linear-gradient(180deg, #faf8ff 0%, #f6f3ff 100%);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* ---------- decorative background ---------- */
+.decor{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;}
+.decor .dots{
+  position:absolute; width:230px; height:230px; opacity:.5;
+  background-image:radial-gradient(var(--violet-300) 2px, transparent 2px);
+  background-size:20px 20px;
+  -webkit-mask-image:radial-gradient(circle, #000 35%, transparent 72%);
+          mask-image:radial-gradient(circle, #000 35%, transparent 72%);
+}
+.decor .dots.d1{top:120px; left:30px;}
+.decor .dots.d2{bottom:60px; right:40px; background-image:radial-gradient(var(--mint-300) 2px, transparent 2px);}
+.decor .blob{position:absolute; filter:blur(8px); opacity:.55;}
+.squiggle{position:absolute; opacity:.85;}
+.s1{top:90px; right:9%;}
+.s2{top:340px; left:7%;}
+.s3{bottom:140px; left:46%;}
+
+/* ---------- shell ---------- */
+.wrap{position:relative; z-index:1; max-width:1240px; margin:0 auto; padding:28px 24px 80px;}
+
+/* ---------- top bar ---------- */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between; gap:18px;
+  flex-wrap:wrap; margin-bottom:14px;
+}
+.brand{display:flex; align-items:center; gap:12px;}
+.brand .logo-badge{
+  width:46px; height:46px; border-radius:14px;
+  background:linear-gradient(145deg, var(--violet-500), var(--violet-700));
+  display:grid; place-items:center; box-shadow:var(--shadow-sm);
+}
+.wordmark{font-family:var(--font-ui); font-weight:800; font-size:24px; letter-spacing:-.02em; color:var(--violet-800);}
+.wordmark b{color:var(--mint-500); font-weight:800;}
+.brand .tag{font-size:12.5px; color:var(--ink-faint); font-weight:600; margin-top:2px;}
+
+/* perspective switch */
+.switch{
+  display:flex; align-items:center; gap:6px; padding:6px;
+  background:rgba(255,255,255,.75); border:1px solid var(--line);
+  border-radius:999px; box-shadow:var(--shadow-sm); backdrop-filter:blur(6px);
+}
+.switch .lbl{font-size:11px; font-weight:700; color:var(--ink-faint); padding:0 8px 0 10px; text-transform:uppercase; letter-spacing:.08em;}
+.seg{
+  border:none; cursor:pointer; font-family:var(--font-ui); font-weight:700; font-size:13.5px;
+  padding:9px 18px; border-radius:999px; color:var(--violet-700); background:transparent;
+  display:flex; align-items:center; gap:7px; transition:.25s;
+}
+.seg:hover{background:var(--violet-50);}
+.seg.is-active{background:linear-gradient(145deg, var(--violet-600), var(--violet-700)); color:#fff; box-shadow:var(--shadow-sm);}
+.seg.is-active.escola{background:linear-gradient(145deg, var(--mint-500), var(--mint-600));}
+
+/* ---------- intro line ---------- */
+.lede{max-width:560px; margin:6px 0 26px;}
+.lede h1{
+  font-family:var(--font-display); font-weight:700; color:var(--violet-900);
+  font-size:clamp(26px,3.4vw,38px); line-height:1.08; letter-spacing:-.01em; margin:8px 0 6px;
+}
+.lede h1 .hl{background:var(--mint-200); border-radius:8px; padding:0 8px; box-decoration-break:clone; -webkit-box-decoration-break:clone;}
+.lede p{color:var(--ink-soft); font-size:15px; line-height:1.55; font-weight:500; margin:0;}
+
+/* ---------- stage layout ---------- */
+.stage{display:none;}
+.stage.is-active{display:block; animation:fade .45s ease both;}
+@keyframes fade{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;}}
+
+/* === ALUNA: phone + caption === */
+.aluna-grid{display:grid; grid-template-columns:minmax(320px,390px) 1fr; gap:50px; align-items:center;}
+@media (max-width:880px){ .aluna-grid{grid-template-columns:1fr; gap:34px; justify-items:center;} }
+
+.phone{
+  width:390px; max-width:100%; aspect-ratio:390/812; position:relative;
+  background:#0e0a1f; border-radius:46px; padding:13px;
+  box-shadow:var(--shadow-lg), 0 0 0 2px rgba(124,58,237,.18);
+}
+.phone::before{content:""; position:absolute; top:16px; left:50%; transform:translateX(-50%); width:128px; height:26px; background:#0e0a1f; border-radius:0 0 18px 18px; z-index:6;}
+.phone__screen{
+  position:relative; width:100%; height:100%; background:var(--violet-50);
+  border-radius:34px; overflow:hidden; display:flex; flex-direction:column;
+}
+
+/* status bar */
+.statusbar{display:flex; justify-content:space-between; align-items:center; padding:14px 22px 4px; font-size:12.5px; font-weight:700; color:var(--violet-900); flex:0 0 auto;}
+.statusbar .icons{display:flex; gap:6px; align-items:center;}
+
+/* app header */
+.app-head{display:flex; align-items:center; justify-content:space-between; padding:6px 18px 12px; flex:0 0 auto;}
+.app-head .wm{font-weight:800; font-size:18px; color:var(--violet-800); letter-spacing:-.02em;}
+.app-head .wm b{color:var(--mint-500);}
+.app-head .av{width:34px; height:34px; border-radius:50%; background:linear-gradient(145deg,var(--mint-300),var(--mint-500)); display:grid; place-items:center; color:#fff; font-weight:800; font-size:13px;}
+
+/* screen scroller */
+.screens{position:relative; flex:1 1 auto; overflow:hidden;}
+.screen{position:absolute; inset:0; overflow-y:auto; padding:6px 18px 24px; opacity:0; visibility:hidden; transform:translateY(8px); transition:opacity .3s, transform .3s;}
+.screen.is-active{opacity:1; visibility:visible; transform:none; position:relative;}
+.screen::-webkit-scrollbar{width:0;}
+
+/* tab bar */
+.tabbar{
+  flex:0 0 auto; display:flex; justify-content:space-around; align-items:center;
+  padding:10px 8px calc(10px + env(safe-area-inset-bottom)); background:#fff;
+  border-top:1px solid var(--line); box-shadow:0 -8px 22px -16px rgba(76,29,149,.4);
+}
+.tab{border:none; background:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; padding:4px 12px; border-radius:12px; color:var(--ink-faint); font-family:var(--font-ui); font-weight:700; font-size:10.5px; transition:.2s;}
+.tab svg{width:23px; height:23px;}
+.tab.is-active{color:var(--violet-700);}
+.tab.is-active .tab-ic{background:var(--violet-100);}
+.tab-ic{width:42px; height:30px; border-radius:11px; display:grid; place-items:center; transition:.2s;}
+
+/* ---------- app UI atoms ---------- */
+.card{background:#fff; border:1px solid var(--line); border-radius:var(--r-md); padding:16px; box-shadow:var(--shadow-sm);}
+.pill{display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:800; padding:5px 11px; border-radius:999px;}
+.pill.mint{background:var(--mint-100); color:var(--mint-600);}
+.pill.violet{background:var(--violet-100); color:var(--violet-700);}
+.pill.warn{background:#ffe4ee; color:var(--danger);}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:9px; width:100%;
+  border:none; cursor:pointer; font-family:var(--font-ui); font-weight:800; font-size:15px;
+  padding:15px 18px; border-radius:16px; transition:transform .12s, box-shadow .2s, filter .2s;
+}
+.btn:active{transform:scale(.975);}
+.btn-primary{background:linear-gradient(135deg, var(--violet-600), var(--violet-700)); color:#fff; box-shadow:0 12px 26px -10px rgba(109,40,217,.7);}
+.btn-primary:hover{filter:brightness(1.06);}
+.btn-mint{background:linear-gradient(135deg, var(--mint-300), var(--mint-500)); color:#06403a; box-shadow:0 12px 26px -10px rgba(20,184,166,.6);}
+.btn-mint:hover{filter:brightness(1.04);}
+.btn-ghost{background:var(--violet-50); color:var(--violet-700); box-shadow:none;}
+.btn-ghost:hover{background:var(--violet-100);}
+.btn.sm{font-size:13px; padding:11px 14px; border-radius:13px; width:auto;}
+
+.eyebrow{font-size:11.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--mint-600);}
+.h-emph{font-family:var(--font-display); font-weight:700; line-height:1.1; color:var(--violet-900);}
+
+.reassure{display:flex; align-items:center; gap:9px; font-size:12px; font-weight:700; color:var(--violet-700); background:var(--violet-50); border:1px dashed var(--violet-200); padding:10px 12px; border-radius:13px;}
+
+/* Início */
+.hero-greet{display:flex; align-items:center; gap:10px; margin:2px 0 14px;}
+.hero-greet .dot{width:9px; height:9px; border-radius:50%; background:var(--mint-400); box-shadow:0 0 0 5px var(--mint-100);}
+.welcome-card{
+  position:relative; overflow:hidden; color:#fff; border-radius:24px; padding:22px 20px 20px; margin-bottom:16px;
+  background:linear-gradient(150deg, var(--violet-600) 0%, var(--violet-800) 70%, var(--violet-900) 100%);
+  box-shadow:var(--shadow-md);
+}
+.welcome-card .glow{position:absolute; width:200px; height:200px; border-radius:50%; background:radial-gradient(circle,var(--mint-400),transparent 65%); opacity:.45; top:-70px; right:-50px;}
+.welcome-card h2{font-family:var(--font-display); font-weight:700; font-size:25px; line-height:1.08; margin:14px 0 8px; position:relative;}
+.welcome-card p{font-size:13.5px; line-height:1.5; opacity:.92; margin:0; position:relative; font-weight:500;}
+.shield-chip{width:46px; height:46px; border-radius:14px; background:rgba(255,255,255,.16); display:grid; place-items:center; backdrop-filter:blur(4px);}
+
+.action-row{display:grid; gap:11px; margin-top:4px;}
+.mini-card{display:flex; align-items:center; gap:13px; background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; cursor:pointer; text-align:left; width:100%; font-family:var(--font-ui); transition:.18s; box-shadow:var(--shadow-sm);}
+.mini-card:hover{transform:translateY(-2px); border-color:var(--violet-200);}
+.mini-card .ic{width:42px; height:42px; flex:0 0 42px; border-radius:13px; display:grid; place-items:center;}
+.mini-card .ic.v{background:var(--violet-100); color:var(--violet-700);}
+.mini-card .ic.m{background:var(--mint-100); color:var(--mint-600);}
+.mini-card .tx b{display:block; font-weight:800; font-size:14.5px; color:var(--ink);}
+.mini-card .tx span{font-size:12px; color:var(--ink-faint); font-weight:500;}
+.mini-card .arr{margin-left:auto; color:var(--violet-300);}
+
+.section-label{font-size:12px; font-weight:800; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.07em; margin:20px 2px 10px;}
+
+/* steps (Análises) */
+.step{display:none;}
+.step.is-active{display:block; animation:fade .4s ease both;}
+.step-track{display:flex; gap:6px; margin:4px 0 16px;}
+.step-track i{height:5px; flex:1; border-radius:3px; background:var(--violet-100); transition:.3s;}
+.step-track i.on{background:linear-gradient(90deg,var(--violet-500),var(--mint-400));}
+
+.illus{width:96px; height:96px; margin:6px auto 2px; display:grid; place-items:center; border-radius:30px; background:var(--violet-50); border:1px solid var(--violet-100);}
+.bullet{display:flex; gap:11px; align-items:flex-start; padding:11px 0; border-bottom:1px solid var(--line);}
+.bullet:last-child{border-bottom:none;}
+.bullet .bi{width:30px; height:30px; flex:0 0 30px; border-radius:9px; background:var(--mint-100); color:var(--mint-600); display:grid; place-items:center;}
+.bullet b{font-size:13.5px;}
+.bullet p{margin:2px 0 0; font-size:12px; color:var(--ink-soft); line-height:1.45;}
+
+/* scanner */
+.scanner{position:relative; width:150px; height:150px; margin:8px auto 14px; border-radius:34px; overflow:hidden; background:linear-gradient(150deg,var(--violet-100),var(--mint-100)); border:1px solid var(--violet-200); display:grid; place-items:center;}
+.scanner .lock{color:var(--violet-700); position:relative; z-index:2;}
+.scan-line{position:absolute; left:0; right:0; height:34%; top:-34%; background:linear-gradient(180deg, rgba(45,212,191,0), rgba(45,212,191,.55)); border-bottom:2px solid var(--mint-400); animation:scan 1.5s ease-in-out infinite;}
+@keyframes scan{0%{top:-34%;}50%{top:100%;}100%{top:-34%;}}
+.scan-status{text-align:center; font-size:13px; color:var(--ink-soft); font-weight:600;}
+.progress{height:8px; border-radius:6px; background:var(--violet-100); overflow:hidden; margin:12px 0 4px;}
+.progress i{display:block; height:100%; width:0; border-radius:6px; background:linear-gradient(90deg,var(--violet-500),var(--mint-400)); transition:width .2s;}
+
+/* result */
+.hashbox{background:var(--violet-950); color:#d7c9ff; border-radius:14px; padding:13px 14px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11px; line-height:1.5; word-break:break-all; position:relative;}
+.hashbox .lab{display:block; font-family:var(--font-ui); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--mint-300); font-weight:800; margin-bottom:5px;}
+.field{margin-top:13px;}
+.field label{display:block; font-size:12.5px; font-weight:800; margin-bottom:6px; color:var(--ink);}
+.field textarea, .field input{width:100%; border:1.5px solid var(--line); border-radius:13px; padding:12px; font-family:var(--font-ui); font-size:13px; color:var(--ink); resize:none; background:#fff; transition:.18s;}
+.field textarea:focus, .field input:focus{outline:none; border-color:var(--violet-400); box-shadow:0 0 0 4px var(--violet-100);}
+.kv{display:flex; justify-content:space-between; font-size:12.5px; padding:7px 0; border-bottom:1px solid var(--line);}
+.kv:last-child{border-bottom:none;}
+.kv span{color:var(--ink-faint); font-weight:600;}
+.kv b{color:var(--ink); font-weight:800;}
+
+/* Relatórios list */
+.report-item{display:flex; gap:12px; align-items:center; padding:14px; border:1px solid var(--line); border-radius:16px; margin-bottom:11px; cursor:pointer; background:#fff; transition:.18s; box-shadow:var(--shadow-sm); width:100%; text-align:left; font-family:var(--font-ui);}
+.report-item:hover{transform:translateY(-2px); border-color:var(--violet-200);}
+.report-item .rico{width:42px; height:42px; flex:0 0 42px; border-radius:12px; background:var(--violet-100); color:var(--violet-700); display:grid; place-items:center;}
+.report-item .meta b{display:block; font-size:13.5px; font-weight:800;}
+.report-item .meta span{font-size:11.5px; color:var(--ink-faint);}
+.tag-status{margin-left:auto; font-size:10.5px; font-weight:800; padding:5px 9px; border-radius:999px; background:var(--mint-100); color:var(--mint-600); white-space:nowrap;}
+.empty{text-align:center; padding:30px 16px; color:var(--ink-faint);}
+.empty svg{margin-bottom:10px;}
+
+/* Apoio */
+.support-hero{background:linear-gradient(150deg,var(--mint-400),var(--mint-600)); color:#fff; border-radius:22px; padding:20px; margin-bottom:14px; box-shadow:var(--shadow-md); position:relative; overflow:hidden;}
+.support-hero h2{font-family:var(--font-display); font-weight:700; font-size:22px; margin:10px 0 6px;}
+.support-hero p{font-size:13px; margin:0; opacity:.95; line-height:1.5;}
+.acc{border:1px solid var(--line); border-radius:14px; margin-bottom:10px; overflow:hidden; background:#fff;}
+.acc summary{list-style:none; cursor:pointer; padding:14px; font-weight:800; font-size:13.5px; display:flex; align-items:center; gap:11px; color:var(--ink);}
+.acc summary::-webkit-details-marker{display:none;}
+.acc summary .ai{width:34px;height:34px;border-radius:10px;background:var(--violet-100);color:var(--violet-700);display:grid;place-items:center;flex:0 0 34px;}
+.acc summary .chev{margin-left:auto; color:var(--violet-300); transition:.2s;}
+.acc[open] summary .chev{transform:rotate(180deg);}
+.acc .body{padding:0 14px 15px 59px; font-size:12.5px; color:var(--ink-soft); line-height:1.55;}
+.acc .body a{color:var(--violet-700); font-weight:700;}
+.helpline{display:flex; align-items:center; gap:11px; background:var(--violet-50); border-radius:13px; padding:11px; margin-top:8px;}
+.helpline b{font-size:13px;} .helpline span{font-size:11px; color:var(--ink-faint);}
+
+/* affirmation */
+.affirm{font-family:var(--font-display); font-weight:600; color:var(--violet-800); text-align:center; font-size:16px; line-height:1.3; padding:16px 8px 6px;}
+.affirm .u{background:var(--mint-200); border-radius:6px; padding:0 6px;}
+
+/* ===== caption beside phone ===== */
+.caption{max-width:440px;}
+.caption .eyebrow{color:var(--violet-500);}
+.caption h2{font-family:var(--font-display); font-weight:700; color:var(--violet-900); font-size:30px; line-height:1.12; margin:10px 0 14px;}
+.caption p{color:var(--ink-soft); font-size:15px; line-height:1.62; margin:0 0 18px;}
+.values{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:22px;}
+.value{flex:1 1 120px; background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; box-shadow:var(--shadow-sm);}
+.value .vic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;margin-bottom:8px;}
+.value b{display:block; font-size:14px; color:var(--violet-800);}
+.value span{font-size:11.5px; color:var(--ink-faint); line-height:1.4; display:block; margin-top:2px;}
+.flow-note{display:flex; align-items:center; gap:10px; font-size:13px; color:var(--ink-soft); font-weight:600; background:rgba(255,255,255,.7); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+.flow-note b{color:var(--violet-700);}
+
+/* === ESCOLA panel === */
+.escola-grid{display:grid; grid-template-columns:1.05fr .95fr; gap:24px; align-items:start;}
+@media (max-width:900px){ .escola-grid{grid-template-columns:1fr;} }
+.browser{background:#fff; border:1px solid var(--line); border-radius:22px; overflow:hidden; box-shadow:var(--shadow-md);}
+.browser .bar{display:flex; align-items:center; gap:8px; padding:13px 16px; background:linear-gradient(180deg,#faf8ff,#f3eeff); border-bottom:1px solid var(--line);}
+.browser .bar i{width:11px; height:11px; border-radius:50%; display:block;}
+.browser .url{margin-left:10px; flex:1; background:#fff; border:1px solid var(--line); border-radius:8px; font-size:12px; color:var(--ink-faint); padding:6px 12px; font-weight:600;}
+.panel-body{padding:22px;}
+.panel-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
+.panel-head .ttl{font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--violet-900);}
+.panel-head .sub{font-size:12.5px; color:var(--ink-faint); font-weight:600;}
+
+.alert-card{border:1.5px solid var(--violet-200); border-radius:18px; overflow:hidden; margin-bottom:18px;}
+.alert-top{display:flex; align-items:center; gap:11px; padding:14px 16px; background:var(--violet-50);}
+.alert-top .ab{width:40px;height:40px;border-radius:12px;background:var(--violet-600);color:#fff;display:grid;place-items:center;}
+.alert-top b{font-size:14.5px; color:var(--violet-900);} .alert-top span{font-size:11.5px; color:var(--ink-faint); display:block;}
+.alert-top .new{margin-left:auto; font-size:10px; font-weight:800; background:var(--danger); color:#fff; padding:4px 9px; border-radius:999px; text-transform:uppercase; letter-spacing:.05em;}
+.alert-body{padding:16px;}
+.blind{position:relative; border-radius:14px; border:2px dashed var(--violet-300); background:repeating-linear-gradient(45deg,var(--violet-50),var(--violet-50) 12px,#fff 12px,#fff 24px); padding:22px 16px; text-align:center; margin-bottom:14px;}
+.blind .lk{width:46px;height:46px;border-radius:14px;background:#fff;border:1px solid var(--violet-200);display:grid;place-items:center;margin:0 auto 10px;color:var(--violet-700); box-shadow:var(--shadow-sm);}
+.blind b{display:block; font-size:13.5px; color:var(--violet-800);}
+.blind span{font-size:11.5px; color:var(--ink-soft); display:block; margin-top:4px; max-width:300px; margin-left:auto; margin-right:auto; line-height:1.45;}
+.relato-q{background:var(--mint-50); border-left:3px solid var(--mint-400); border-radius:0 12px 12px 0; padding:12px 14px; font-size:13px; color:var(--ink); font-style:italic; line-height:1.5; margin-bottom:6px;}
+
+/* protocol */
+.proto-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
+.proto-head b{font-size:14px; color:var(--violet-900);}
+.proto-prog{font-size:12px; font-weight:800; color:var(--mint-600);}
+.proto-bar{height:7px; border-radius:5px; background:var(--violet-100); overflow:hidden; margin:8px 0 16px;}
+.proto-bar i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--violet-500),var(--mint-400)); transition:width .35s;}
+.proto-step{display:flex; gap:13px; align-items:flex-start; padding:13px; border:1px solid var(--line); border-radius:14px; margin-bottom:10px; cursor:pointer; transition:.18s; background:#fff;}
+.proto-step:hover{border-color:var(--violet-200); background:var(--violet-50);}
+.proto-step .chk{width:26px;height:26px;flex:0 0 26px;border-radius:8px;border:2px solid var(--violet-200);display:grid;place-items:center;color:#fff;transition:.2s;}
+.proto-step.done .chk{background:var(--mint-500); border-color:var(--mint-500);}
+.proto-step.done b{text-decoration:line-through; color:var(--ink-faint);}
+.proto-step b{font-size:13.5px; display:block;}
+.proto-step p{margin:3px 0 0; font-size:11.5px; color:var(--ink-soft); line-height:1.45;}
+
+.gen-report{border:1.5px solid var(--mint-300); background:var(--mint-50); border-radius:16px; padding:16px; text-align:center;}
+.gen-report .gi{width:50px;height:50px;border-radius:15px;background:#fff;border:1px solid var(--mint-200);display:grid;place-items:center;margin:0 auto 10px;color:var(--mint-600);}
+.gen-report b{display:block; font-size:15px; color:var(--violet-900); font-family:var(--font-display);}
+.gen-report p{font-size:12px; color:var(--ink-soft); margin:5px 0 13px; line-height:1.45;}
+
+/* ===== modal (technical report) ===== */
+.modal{position:fixed; inset:0; z-index:50; display:none; align-items:center; justify-content:center; padding:24px;}
+.modal.open{display:flex; animation:fade .25s ease both;}
+.modal .ov{position:absolute; inset:0; background:rgba(31,15,71,.5); backdrop-filter:blur(3px);}
+.doc{position:relative; background:#fff; width:min(560px,100%); max-height:88vh; overflow-y:auto; border-radius:24px; box-shadow:var(--shadow-lg);}
+.doc-head{position:sticky; top:0; background:linear-gradient(135deg,var(--violet-700),var(--violet-900)); color:#fff; padding:20px 24px; display:flex; align-items:center; gap:12px;}
+.doc-head .dh{width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,.16);display:grid;place-items:center;}
+.doc-head b{font-family:var(--font-display); font-weight:700; font-size:17px; display:block;}
+.doc-head span{font-size:11.5px; opacity:.85;}
+.doc-head .x{margin-left:auto; background:rgba(255,255,255,.16); border:none; color:#fff; width:34px; height:34px; border-radius:10px; cursor:pointer; font-size:18px; display:grid; place-items:center;}
+.doc-body{padding:22px 24px 26px;}
+.doc-sec{margin-bottom:18px;}
+.doc-sec h4{font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--mint-600); font-weight:800; margin:0 0 9px; padding-bottom:6px; border-bottom:1px solid var(--line);}
+.legal-chip{display:inline-block; font-size:11px; font-weight:700; background:var(--violet-50); color:var(--violet-700); border:1px solid var(--violet-100); padding:5px 10px; border-radius:8px; margin:3px 4px 3px 0;}
+.notice{display:flex; gap:10px; align-items:flex-start; background:var(--mint-50); border:1px solid var(--mint-200); border-radius:13px; padding:12px; font-size:12px; color:var(--ink-soft); line-height:1.5;}
+.notice b{color:var(--mint-600);}
+
+/* toast */
+.toast{position:fixed; left:50%; bottom:30px; transform:translate(-50%,140%); background:var(--violet-900); color:#fff; padding:14px 22px; border-radius:14px; font-weight:700; font-size:13.5px; display:flex; align-items:center; gap:10px; box-shadow:var(--shadow-lg); z-index:60; transition:transform .4s cubic-bezier(.2,1.2,.3,1);}
+.toast.show{transform:translate(-50%,0);}
+.toast .ti{color:var(--mint-300);}
+
+/* footer note */
+.foot{margin-top:46px; text-align:center; color:var(--ink-faint); font-size:12px; line-height:1.6;}
+.foot b{color:var(--violet-700);}
+
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
+</style>
+</head>
+<body>
+
+<div class="decor" aria-hidden="true">
+  <div class="dots d1"></div>
+  <div class="dots d2"></div>
+  <svg class="squiggle s1" width="64" height="34" viewBox="0 0 64 34" fill="none"><path d="M3 23C10 6 18 6 25 17s14 11 21 0 13-11 15-3" stroke="#a78bfa" stroke-width="4" stroke-linecap="round"/></svg>
+  <svg class="squiggle s2" width="52" height="30" viewBox="0 0 52 30" fill="none"><path d="M3 16C9 4 16 4 22 14s12 10 17 0 8-9 10-4" stroke="#5eead4" stroke-width="4" stroke-linecap="round"/></svg>
+  <svg class="squiggle s3" width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M22 5v34M5 22h34" stroke="#c4b5fd" stroke-width="3.5" stroke-linecap="round"/></svg>
+</div>
+
+<div class="wrap">
+
+  <!-- ===== top bar ===== -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo-badge">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 2.5 4 5.6v6.2c0 4.8 3.4 8.4 8 9.7 4.6-1.3 8-4.9 8-9.7V5.6L12 2.5Z" fill="#fff" fill-opacity=".18" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 9.2c.9-1.4 3.4-1 3.4 1 0 1.5-2.2 3-3.4 3.9-1.2-.9-3.4-2.4-3.4-3.9 0-2 2.5-2.4 3.4-1Z" fill="#5eead4"/></svg>
+      </div>
+      <div>
+        <div class="wordmark">Safe<b>Graph</b></div>
+        <div class="tag">Proteção, evidência e acolhimento contra deepfakes</div>
+      </div>
+    </div>
+
+    <div class="switch" role="tablist" aria-label="Trocar perspectiva">
+      <span class="lbl">Ver como</span>
+      <button class="seg is-active" id="seg-aluna" role="tab" aria-selected="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Aluna
+      </button>
+      <button class="seg escola" id="seg-escola" role="tab" aria-selected="false">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+        Escola
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================== ALUNA ===================== -->
+  <section class="stage is-active" id="stage-aluna">
+    <div class="lede">
+      <span class="eyebrow">App da aluna · webapp local</span>
+      <h1>Sua imagem nunca sai do <span class="hl">seu celular</span>.</h1>
+      <p>A prova é congelada com uma assinatura digital gerada no próprio aparelho. Você aciona a escola sem precisar mostrar a foto para ninguém.</p>
+    </div>
+
+    <div class="aluna-grid">
+      <!-- PHONE -->
+      <div class="phone">
+        <div class="phone__screen">
+          <!-- status bar -->
+          <div class="statusbar">
+            <span>9:41</span>
+            <span class="icons">
+              <svg width="17" height="11" viewBox="0 0 17 11" fill="none"><rect x="0" y="6" width="3" height="5" rx="1" fill="#241b3a"/><rect x="4.5" y="3.5" width="3" height="7.5" rx="1" fill="#241b3a"/><rect x="9" y="1.5" width="3" height="9.5" rx="1" fill="#241b3a"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#241b3a" opacity=".4"/></svg>
+              <svg width="22" height="11" viewBox="0 0 22 11" fill="none"><rect x="1" y="1" width="18" height="9" rx="2.5" stroke="#241b3a" stroke-width="1.2"/><rect x="2.5" y="2.5" width="13" height="6" rx="1.2" fill="#241b3a"/><rect x="20" y="3.5" width="1.5" height="4" rx="1" fill="#241b3a"/></svg>
+            </span>
+          </div>
+          <!-- app header -->
+          <div class="app-head">
+            <div class="wm">Safe<b>Graph</b></div>
+            <div class="av">M</div>
+          </div>
+
+          <!-- screens -->
+          <div class="screens">
+
+            <!-- ===== INÍCIO ===== -->
+            <section class="screen is-active" id="scr-inicio" aria-label="Início">
+              <div class="hero-greet"><span class="dot"></span><span style="font-weight:700;color:var(--ink-soft);font-size:13px;">Olá, Mari 💜</span></div>
+              <div class="welcome-card">
+                <div class="glow"></div>
+                <div class="shield-chip">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3 5 5.8v5.4c0 4.1 2.9 7.2 7 8.3 4.1-1.1 7-4.2 7-8.3V5.8L12 3Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="m9 12 2 2 4-4.5" stroke="#5eead4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <h2>Você não está<br>sozinha.</h2>
+                <p>Estamos aqui para proteger você e a sua imagem. Tudo acontece com sigilo e no seu tempo.</p>
+              </div>
+
+              <div class="reassure">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 11V8a6 6 0 1 1 12 0v3" stroke="currentColor" stroke-width="2"/><rect x="4" y="11" width="16" height="10" rx="2.5" stroke="currentColor" stroke-width="2"/></svg>
+                Processamento 100% local · nenhuma foto é enviada
+              </div>
+
+              <div class="section-label">O que você precisa agora?</div>
+              <div class="action-row">
+                <button class="mini-card" data-go-analise>
+                  <span class="ic v"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3 5 5.8v5.4c0 4.1 2.9 7.2 7 8.3 4.1-1.1 7-4.2 7-8.3V5.8L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 8v5m0 3h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+                  <span class="tx"><b>Registrar uma montagem</b><span>Congele a prova com segurança</span></span>
+                  <span class="arr"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </button>
+                <button class="mini-card" data-go-apoio>
+                  <span class="ic m"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.3-7-9.2C5 7.6 7.2 6 9.2 6c1.6 0 2.8 1.1 2.8 1.1S13.2 6 14.8 6C16.8 6 19 7.6 19 10.8 19 15.7 12 20 12 20Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                  <span class="tx"><b>Quero apoio agora</b><span>Fale com alguém de confiança</span></span>
+                  <span class="arr"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </button>
+                <button class="mini-card" data-open-rights>
+                  <span class="ic v"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M5 7h14M7 7l-3 6a3 3 0 0 0 6 0L7 7Zm10 0-3 6a3 3 0 0 0 6 0l-3-6Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  <span class="tx"><b>Conheça seus direitos</b><span>A lei está do seu lado</span></span>
+                  <span class="arr"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </button>
+              </div>
+
+              <div class="affirm">Uma montagem <span class="u">não define</span> quem você é.</div>
+            </section>
+
+            <!-- ===== ANÁLISES ===== -->
+            <section class="screen" id="scr-analise" aria-label="Análises">
+              <div class="step-track"><i id="t1" class="on"></i><i id="t2"></i><i id="t3"></i></div>
+
+              <!-- step 1: intro -->
+              <div class="step is-active" id="step-1">
+                <span class="pill violet">Passo 1 de 3 · Como funciona</span>
+                <div class="illus">
+                  <svg width="50" height="50" viewBox="0 0 24 24" fill="none"><path d="M12 3 5 5.8v5.4c0 4.1 2.9 7.2 7 8.3 4.1-1.1 7-4.2 7-8.3V5.8L12 3Z" stroke="#6d28d9" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 8.5c.8-1.2 3-0.8 3 .9 0 1.3-2 2.6-3 3.4-1-.8-3-2.1-3-3.4 0-1.7 2.2-2.1 3-.9Z" fill="#5eead4"/></svg>
+                </div>
+                <h3 class="h-emph" style="text-align:center; font-size:20px; margin:6px 0 4px;">Vamos congelar a prova juntas</h3>
+                <p style="text-align:center; font-size:13px; color:var(--ink-soft); margin:0 0 16px; line-height:1.5;">Sem expor a sua intimidade. Veja o que acontece:</p>
+
+                <div class="card">
+                  <div class="bullet"><span class="bi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 11V8a6 6 0 1 1 12 0v3" stroke="currentColor" stroke-width="2"/><rect x="4" y="11" width="16" height="10" rx="2.5" stroke="currentColor" stroke-width="2"/></svg></span><div><b>A imagem fica só no seu aparelho</b><p>Nada é enviado para a nuvem ou para a escola.</p></div></div>
+                  <div class="bullet"><span class="bi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><div><b>Geramos uma assinatura digital (hash)</b><p>Um código único que comprova a existência da prova, sem ser a foto.</p></div></div>
+                  <div class="bullet"><span class="bi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>Só o relato e o código vão à escola</b><p>Você mantém o controle total da sua imagem.</p></div></div>
+                </div>
+
+                <div style="margin-top:16px;">
+                  <button class="btn btn-primary" id="pick-file">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="m3 16 5-4 4 3 4-5 5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8.5" cy="9.5" r="1.5" fill="currentColor"/></svg>
+                    Selecionar a imagem
+                  </button>
+                  <input type="file" id="file-input" accept="image/*" class="sr" />
+                  <button class="btn btn-ghost" id="use-demo" style="margin-top:9px;">Ver com imagem de exemplo</button>
+                </div>
+              </div>
+
+              <!-- step 2: scanning -->
+              <div class="step" id="step-2">
+                <span class="pill mint">Passo 2 de 3 · Processando localmente</span>
+                <div class="scanner">
+                  <div class="scan-line"></div>
+                  <svg class="lock" width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M7 10V7a5 5 0 1 1 10 0v3" stroke="currentColor" stroke-width="2"/><rect x="5" y="10" width="14" height="9.5" rx="2.5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="14.5" r="1.6" fill="currentColor"/></svg>
+                </div>
+                <h3 class="h-emph" style="text-align:center; font-size:19px; margin:4px 0;">Analisando no seu dispositivo…</h3>
+                <p class="scan-status" id="scan-status">Lendo o padrão da imagem…</p>
+                <div class="progress"><i id="scan-bar"></i></div>
+                <div class="reassure" style="margin-top:14px; justify-content:center;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M6 11V8a6 6 0 1 1 12 0v3" stroke="currentColor" stroke-width="2"/><rect x="4" y="11" width="16" height="10" rx="2.5" stroke="currentColor" stroke-width="2"/></svg>
+                  A foto não está saindo do aparelho
+                </div>
+              </div>
+
+              <!-- step 3: result -->
+              <div class="step" id="step-3">
+                <span class="pill mint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg> Análise concluída</span>
+                <h3 class="h-emph" style="font-size:20px; margin:12px 0 3px;">Prova congelada com segurança</h3>
+                <p style="font-size:12.5px; color:var(--ink-soft); margin:0 0 14px; line-height:1.5;">A imagem foi descartada. Guardamos apenas a assinatura abaixo.</p>
+
+                <div class="hashbox">
+                  <span class="lab">Assinatura digital · SHA-256</span>
+                  <span id="hash-value">—</span>
+                </div>
+
+                <div class="card" style="margin-top:13px;">
+                  <div class="kv"><span>Registrado em</span><b id="reg-datetime">—</b></div>
+                  <div class="kv"><span>Tipo</span><b>Montagem / deepfake</b></div>
+                  <div class="kv"><span>Conteúdo sensível</span><b style="color:var(--mint-600)">Não armazenado</b></div>
+                </div>
+
+                <div class="field">
+                  <label for="relato">Conte, no seu tempo, o que aconteceu</label>
+                  <textarea id="relato" rows="3" placeholder="Ex.: Criaram uma montagem minha e estão espalhando no grupo da turma…"></textarea>
+                </div>
+
+                <button class="btn btn-mint" id="send-school" style="margin-top:14px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 12l16-8-6 16-3-7-7-1Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                  Gerar relatório e avisar a escola
+                </button>
+                <button class="btn btn-ghost sm" id="restart-analise" style="margin:9px auto 0; display:flex;">Recomeçar</button>
+              </div>
+            </section>
+
+            <!-- ===== RELATÓRIOS ===== -->
+            <section class="screen" id="scr-relatorios" aria-label="Relatórios">
+              <h3 class="h-emph" style="font-size:21px; margin:8px 0 3px;">Seus relatórios</h3>
+              <p style="font-size:12.5px; color:var(--ink-faint); margin:0 0 16px;">Provas registradas e enviadas à coordenação.</p>
+              <div id="reports-list"></div>
+            </section>
+
+            <!-- ===== APOIO ===== -->
+            <section class="screen" id="scr-apoio" aria-label="Apoio">
+              <div class="support-hero">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.3-7-9.2C5 7.6 7.2 6 9.2 6c1.6 0 2.8 1.1 2.8 1.1S13.2 6 14.8 6C16.8 6 19 7.6 19 10.8 19 15.7 12 20 12 20Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                <h2>Você merece respeito.</h2>
+                <p>O medo do julgamento paralisa — mas o apoio transforma. Procure quem você confia.</p>
+              </div>
+
+              <details class="acc" open>
+                <summary><span class="ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V6a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v9Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span> Falar com alguém de confiança <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></summary>
+                <div class="body">Um responsável, professor(a) ou orientador(a) pode te ajudar a acionar a escola. Você não precisa passar por isso sozinha.
+                  <div class="helpline"><span class="ic" style="width:34px;height:34px;border-radius:10px;background:var(--mint-100);color:var(--mint-600);display:grid;place-items:center;flex:0 0 34px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span><div><b>SaferNet · Canal de Ajuda</b><span>Orientação e acolhimento gratuitos</span></div></div>
+                </div>
+              </details>
+
+              <details class="acc">
+                <summary><span class="ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M5 7h14M7 7l-3 6a3 3 0 0 0 6 0L7 7Zm10 0-3 6a3 3 0 0 0 6 0l-3-6Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Seus direitos <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></summary>
+                <div class="body">A lei protege você. Com o relatório do SafeGraph, sua família pode exigir a remoção do conteúdo.
+                  <div style="margin-top:9px;">
+                    <span class="legal-chip">Art. 21 · Marco Civil</span>
+                    <span class="legal-chip">Art. 241-C · ECA</span>
+                    <span class="legal-chip">Lei 13.718/18</span>
+                    <span class="legal-chip">Lei 15.123/25 · IA</span>
+                  </div>
+                </div>
+              </details>
+
+              <details class="acc">
+                <summary><span class="ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 8v5m0 3h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 3 5 5.8v5.4c0 4.1 2.9 7.2 7 8.3 4.1-1.1 7-4.2 7-8.3V5.8L12 3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span> Cuidar de mim agora <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></summary>
+                <div class="body">Respire. O que fizeram com a sua imagem é responsabilidade de quem fez — não sua. Não apague provas sozinha e evite responder aos ataques. Procure a sua rede de apoio.</div>
+              </details>
+
+              <div class="affirm" style="margin-top:14px;">Sua história <span class="u">importa</span>.</div>
+            </section>
+
+          </div><!-- /screens -->
+
+          <!-- tab bar -->
+          <nav class="tabbar" aria-label="Navegação do app">
+            <button class="tab is-active" data-tab="inicio">
+              <span class="tab-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1v-8Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></span>
+              Início
+            </button>
+            <button class="tab" data-tab="analise">
+              <span class="tab-ic"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.9"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></span>
+              Análises
+            </button>
+            <button class="tab" data-tab="relatorios">
+              <span class="tab-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M7 3h7l4 4v14H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M14 3v4h4M9.5 13h5M9.5 16.5h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+              Relatórios
+            </button>
+            <button class="tab" data-tab="apoio">
+              <span class="tab-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.3-7-9.2C5 7.6 7.2 6 9.2 6c1.6 0 2.8 1.1 2.8 1.1S13.2 6 14.8 6C16.8 6 19 7.6 19 10.8 19 15.7 12 20 12 20Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></span>
+              Apoio
+            </button>
+          </nav>
+        </div>
+      </div><!-- /phone -->
+
+      <!-- CAPTION -->
+      <div class="caption">
+        <span class="eyebrow">Arquitetura sociotécnica · etapa 1</span>
+        <h2>A tecnologia vira o guia da ação social.</h2>
+        <p>Cada etapa técnica dispara um cuidado humano. No app, a aluna preserva a evidência com autonomia e sigilo — o primeiro elo de uma ponte que liga vítima, escola e família.</p>
+
+        <div class="values">
+          <div class="value">
+            <div class="vic" style="background:var(--violet-100);color:var(--violet-700)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3 5 5.8v5.4c0 4.1 2.9 7.2 7 8.3 4.1-1.1 7-4.2 7-8.3V5.8L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+            <b>Dignidade</b><span>Privacidade e autonomia da vítima desde o primeiro toque.</span>
+          </div>
+          <div class="value">
+            <div class="vic" style="background:var(--mint-100);color:var(--mint-600)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.3-7-9.2C5 7.6 7.2 6 9.2 6c1.6 0 2.8 1.1 2.8 1.1S13.2 6 14.8 6C16.8 6 19 7.6 19 10.8 19 15.7 12 20 12 20Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+            <b>Acolhimento</b><span>A escola apoia sem julgar e sem revitimizar.</span>
+          </div>
+          <div class="value">
+            <div class="vic" style="background:var(--violet-100);color:var(--violet-700)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <b>Responsabilidade</b><span>Prova concreta para a família agir — não só pânico.</span>
+          </div>
+        </div>
+
+        <div class="flow-note">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#6d28d9" stroke-width="1.8"/><path d="m8 12 3 3 5-6" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Gere um relatório no app e clique em <b>“Ver como Escola”</b> para acompanhar o alerta cego chegar à coordenação.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ESCOLA ===================== -->
+  <section class="stage" id="stage-escola">
+    <div class="lede">
+      <span class="eyebrow" style="color:var(--mint-600)">Painel da coordenação · interface cega</span>
+      <h1>Acolher sem nunca <span class="hl" style="background:var(--violet-200)">ver o arquivo</span>.</h1>
+      <p>A escola recebe o relato e a assinatura técnica, mas a interface bloqueia o conteúdo sensível — protegendo a aluna da revitimização e o educador de manusear material ilícito.</p>
+    </div>
+
+    <div class="escola-grid">
+      <!-- left: blind alert + protocol -->
+      <div class="browser">
+        <div class="bar"><i style="background:#ff6058"></i><i style="background:#ffbd2e"></i><i style="background:#28c840"></i><span class="url">🔒 painel.safegraph.app/coordenacao</span></div>
+        <div class="panel-body">
+          <div class="panel-head">
+            <div><div class="ttl">Gestão de crise</div><div class="sub">Colégio Horizonte · Coordenação</div></div>
+            <span class="pill violet"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> tempo real</span>
+          </div>
+
+          <div class="alert-card">
+            <div class="alert-top">
+              <span class="ab"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7 10V7a5 5 0 1 1 10 0v3" stroke="#fff" stroke-width="2"/><rect x="5" y="10" width="14" height="9.5" rx="2.5" stroke="#fff" stroke-width="2"/></svg></span>
+              <div><b>Novo alerta protegido</b><span id="alert-id">Protocolo —</span></div>
+              <span class="new">novo</span>
+            </div>
+            <div class="alert-body">
+              <div class="blind">
+                <div class="lk"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M7 10V7a5 5 0 1 1 10 0v3" stroke="currentColor" stroke-width="2"/><rect x="5" y="10" width="14" height="9.5" rx="2.5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="14.5" r="1.6" fill="currentColor"/></svg></div>
+                <b>Arquivo bloqueado por segurança</b>
+                <span>Você não precisa — e não pode — visualizar o conteúdo. Apenas a assinatura digital e o relato foram recebidos.</span>
+              </div>
+              <div class="relato-q" id="alert-relato">“Criaram uma montagem minha e estão espalhando no grupo da turma. Tenho medo de ir à aula.”</div>
+              <div class="kv" style="margin-top:6px;"><span>Assinatura (SHA-256)</span><b id="alert-hash" style="font-family:ui-monospace,monospace; font-size:11px;">—</b></div>
+              <div class="kv"><span>Recebido em</span><b id="alert-time">—</b></div>
+            </div>
+          </div>
+
+          <div class="proto-head">
+            <b>Protocolo de acolhimento</b>
+            <span class="proto-prog" id="proto-prog">0 / 5</span>
+          </div>
+          <div class="proto-bar"><i id="proto-bar"></i></div>
+
+          <div id="proto-list">
+            <div class="proto-step" data-step><span class="chk"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>1 · Acolher a aluna sem julgamento</b><p>Escuta empática, em ambiente reservado e seguro.</p></div></div>
+            <div class="proto-step" data-step><span class="chk"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>2 · Acionar a rede interna</b><p>Orientação pedagógica e apoio psicológico da escola.</p></div></div>
+            <div class="proto-step" data-step><span class="chk"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>3 · Contatar os responsáveis legais</b><p>Comunicar a família com cuidado e sem alarmismo.</p></div></div>
+            <div class="proto-step" data-step><span class="chk"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>4 · Reunião de acolhimento</b><p>Entregar o relatório técnico gerado pelo sistema.</p></div></div>
+            <div class="proto-step" data-step><span class="chk"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>5 · Apoiar a notificação às plataformas</b><p>Marco Civil (art. 21) e, se preciso, a delegacia (DEAIJ).</p></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- right: generated report + values -->
+      <div>
+        <div class="card" style="border-radius:22px; padding:20px; margin-bottom:18px;">
+          <span class="eyebrow" style="color:var(--violet-500)">Saída do sistema</span>
+          <h3 class="h-emph" style="font-size:19px; margin:8px 0 4px;">Relatório técnico</h3>
+          <p style="font-size:13px; color:var(--ink-soft); margin:0 0 14px; line-height:1.5;">Gerado automaticamente a partir da assinatura digital. É a notificação extrajudicial que a família leva às plataformas.</p>
+          <div class="gen-report">
+            <div class="gi"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l4 4v14H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3v4h4M9.5 13h5M9.5 16.5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+            <b>Notificação pronta</b>
+            <p>Sem expor a imagem · validada tecnicamente</p>
+            <button class="btn btn-primary" id="open-doc"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg> Ver relatório técnico</button>
+          </div>
+        </div>
+
+        <div class="card" style="border-radius:22px; padding:20px; background:linear-gradient(150deg,var(--violet-700),var(--violet-900)); color:#fff; border:none;">
+          <span class="eyebrow" style="color:var(--mint-300)">Por que isso protege</span>
+          <h3 style="font-family:var(--font-display); font-weight:700; font-size:18px; margin:8px 0 12px;">Privacy by design, na prática</h3>
+          <div style="display:grid; gap:11px;">
+            <div style="display:flex; gap:10px; align-items:flex-start; font-size:13px; line-height:1.45;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex:0 0 18px;margin-top:1px"><path d="M5 12l4 4L19 6" stroke="#5eead4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Zero upload:</b> a imagem nunca está sob custódia da escola.</span></div>
+            <div style="display:flex; gap:10px; align-items:flex-start; font-size:13px; line-height:1.45;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex:0 0 18px;margin-top:1px"><path d="M5 12l4 4L19 6" stroke="#5eead4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Minimização de dados:</b> só hash, data, hora e relato (LGPD).</span></div>
+            <div style="display:flex; gap:10px; align-items:flex-start; font-size:13px; line-height:1.45;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex:0 0 18px;margin-top:1px"><path d="M5 12l4 4L19 6" stroke="#5eead4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Não-maleficência:</b> ninguém da escola revê a violação.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    <b>SafeGraph</b> · Protótipo conceitual (AV2 — Tecnologia, Impacto Social e Comunicação Estratégica)<br>
+    Fluxo demonstrativo: nenhuma imagem é processada ou enviada de fato. Dados fictícios.
+  </div>
+</div>
+
+<!-- ===== rights modal ===== -->
+<div class="modal" id="rights-modal">
+  <div class="ov" data-close></div>
+  <div class="doc">
+    <div class="doc-head" style="background:linear-gradient(135deg,var(--mint-500),var(--mint-700,#0d9488))">
+      <div class="dh"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M5 7h14M7 7l-3 6a3 3 0 0 0 6 0L7 7Zm10 0-3 6a3 3 0 0 0 6 0l-3-6Z" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div><b>Seus direitos</b><span>A lei está do seu lado</span></div>
+      <button class="x" data-close aria-label="Fechar">×</button>
+    </div>
+    <div class="doc-body">
+      <div class="notice" style="margin-bottom:16px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 8v5m0 3h.01" stroke="#0d9488" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#0d9488" stroke-width="1.8"/></svg><span>Criar e divulgar uma montagem íntima sua é <b>crime</b>. Você é a vítima — a responsabilidade é de quem fez.</span></div>
+      <div class="doc-sec"><h4>O que a lei garante</h4>
+        <p style="font-size:13px; color:var(--ink-soft); line-height:1.55; margin:0 0 10px;">Com o relatório do SafeGraph, sua família pode <b>exigir a remoção imediata</b> do conteúdo das plataformas.</p>
+        <span class="legal-chip">Art. 21 · Marco Civil da Internet</span>
+        <span class="legal-chip">Art. 241-C · ECA</span>
+        <span class="legal-chip">Art. 218-C · Código Penal</span>
+        <span class="legal-chip">Lei 13.718/2018</span>
+        <span class="legal-chip">Lei 15.123/2025 (uso de IA)</span>
+      </div>
+      <div class="doc-sec"><h4>Onde buscar ajuda</h4>
+        <div class="helpline"><span class="ic" style="width:34px;height:34px;border-radius:10px;background:var(--mint-100);color:var(--mint-600);display:grid;place-items:center;flex:0 0 34px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span><div><b>SaferNet · Canal de Ajuda</b><span style="font-size:11px;color:var(--ink-faint)">Acolhimento e orientação gratuitos</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== technical report modal ===== -->
+<div class="modal" id="doc-modal">
+  <div class="ov" data-close></div>
+  <div class="doc">
+    <div class="doc-head">
+      <div class="dh"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l4 4v14H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M14 3v4h4" stroke="#fff" stroke-width="1.7"/></svg></div>
+      <div><b>Relatório Técnico</b><span>Notificação extrajudicial · SafeGraph</span></div>
+      <button class="x" data-close aria-label="Fechar">×</button>
+    </div>
+    <div class="doc-body">
+      <div class="doc-sec"><h4>Identificação do registro</h4>
+        <div class="kv"><span>Protocolo</span><b id="doc-proto">—</b></div>
+        <div class="kv"><span>Data / hora</span><b id="doc-datetime">—</b></div>
+        <div class="kv"><span>Natureza</span><b>Imagem manipulada (deepfake)</b></div>
+        <div class="kv"><span>Origem</span><b>Webapp da vítima · processamento local</b></div>
+      </div>
+      <div class="doc-sec"><h4>Assinatura digital da evidência</h4>
+        <div class="hashbox"><span class="lab">SHA-256 · gerado no dispositivo</span><span id="doc-hash">—</span></div>
+      </div>
+      <div class="doc-sec"><h4>Relato</h4>
+        <div class="relato-q" id="doc-relato" style="font-style:italic;">—</div>
+      </div>
+      <div class="doc-sec"><h4>Fundamentação legal</h4>
+        <span class="legal-chip">Art. 21 · Marco Civil</span>
+        <span class="legal-chip">Art. 241-C · ECA</span>
+        <span class="legal-chip">Lei 13.718/18</span>
+        <span class="legal-chip">Lei 15.123/25</span>
+      </div>
+      <div class="notice"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex:0 0 20px"><path d="M6 11V8a6 6 0 1 1 12 0v3" stroke="#0d9488" stroke-width="2"/><rect x="4" y="11" width="16" height="10" rx="2.5" stroke="#0d9488" stroke-width="2"/></svg><span><b>Conteúdo sensível não armazenado.</b> Este documento comprova a existência da prova por meio da assinatura digital, sem reproduzir a imagem — preservando a vítima e a instituição.</span></div>
+      <button class="btn btn-primary" style="margin-top:18px;" data-close>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Entregar à família
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span id="toast-msg">Pronto!</span></div>
+
+<script>
+/* ===================== state ===================== */
+const state = {
+  reports: [],
+  seq: 184,
+  current: null, // last analysis (hash, datetime, relato, proto)
+};
+
+/* ===================== helpers ===================== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+
+function pad(n){ return String(n).padStart(2,'0'); }
+function nowStamp(){
+  const d = new Date();
+  return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} · ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function randomHash(){
+  const hex = '0123456789abcdef';
+  let s = '';
+  for(let i=0;i<64;i++) s += hex[Math.floor(Math.random()*16)];
+  return s;
+}
+async function sha256(buffer){
+  try{
+    const digest = await crypto.subtle.digest('SHA-256', buffer);
+    return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  }catch(e){ return randomHash(); }
+}
+function nextProtocol(){ state.seq++; return `SG-2026-${String(state.seq).padStart(4,'0')}`; }
+
+function toast(msg){
+  $('#toast-msg').textContent = msg;
+  const t = $('#toast'); t.classList.add('show');
+  clearTimeout(t._tm); t._tm = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+/* ===================== perspective switch ===================== */
+function setPerspective(which){
+  const aluna = which==='aluna';
+  $('#seg-aluna').classList.toggle('is-active', aluna);
+  $('#seg-escola').classList.toggle('is-active', !aluna);
+  $('#seg-aluna').setAttribute('aria-selected', aluna);
+  $('#seg-escola').setAttribute('aria-selected', !aluna);
+  $('#stage-aluna').classList.toggle('is-active', aluna);
+  $('#stage-escola').classList.toggle('is-active', !aluna);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+$('#seg-aluna').onclick = ()=>setPerspective('aluna');
+$('#seg-escola').onclick = ()=>setPerspective('escola');
+
+/* ===================== app tabs ===================== */
+function showScreen(name){
+  $$('.screen').forEach(s=>s.classList.remove('is-active'));
+  $('#scr-'+name).classList.add('is-active');
+  $$('.tab').forEach(t=>t.classList.toggle('is-active', t.dataset.tab===name));
+  $('.screens').scrollTop = 0;
+}
+$$('.tab').forEach(t=> t.onclick = ()=>showScreen(t.dataset.tab));
+$$('[data-go-analise]').forEach(b=> b.onclick = ()=>showScreen('analise'));
+$$('[data-go-apoio]').forEach(b=> b.onclick = ()=>showScreen('apoio'));
+
+/* ===================== analysis flow ===================== */
+function setStep(n){
+  [1,2,3].forEach(i=>{
+    $('#step-'+i).classList.toggle('is-active', i===n);
+    $('#t'+i).classList.toggle('on', i<=n);
+  });
+}
+function resetAnalysis(){ setStep(1); $('#relato').value=''; $('#scan-bar').style.width='0'; }
+
+$('#pick-file').onclick = ()=> $('#file-input').click();
+$('#file-input').onchange = (e)=>{
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  runScan(f);
+};
+$('#use-demo').onclick = ()=> runScan(null);
+$('#restart-analise').onclick = resetAnalysis;
+
+async function runScan(file){
+  setStep(2);
+  const bar = $('#scan-bar');
+  const status = $('#scan-status');
+  const phases = ['Lendo o padrão da imagem…','Identificando manipulação…','Gerando assinatura local (hash)…','Descartando a imagem com segurança…'];
+  bar.style.width='0';
+  let p = 0;
+  // compute real hash from the file (still never leaves the page)
+  let hashPromise = file ? file.arrayBuffer().then(sha256) : Promise.resolve(randomHash());
+
+  const tick = setInterval(()=>{
+    p += 6 + Math.random()*7;
+    if(p>100) p=100;
+    bar.style.width = p+'%';
+    status.textContent = phases[Math.min(phases.length-1, Math.floor(p/26))];
+    if(p>=100){
+      clearInterval(tick);
+      hashPromise.then(hash=>{
+        state.current = { hash, datetime: nowStamp() };
+        $('#hash-value').textContent = hash;
+        $('#reg-datetime').textContent = state.current.datetime;
+        setTimeout(()=>setStep(3), 350);
+      });
+    }
+  }, 230);
+}
+
+$('#send-school').onclick = ()=>{
+  if(!state.current){ return; }
+  const relato = $('#relato').value.trim() || 'Criaram uma montagem minha e estão espalhando no grupo da turma. Tenho medo de ir à aula.';
+  const report = {
+    proto: nextProtocol(),
+    hash: state.current.hash,
+    datetime: state.current.datetime,
+    relato
+  };
+  state.reports.unshift(report);
+  renderReports();
+  updateEscola(report);
+  resetAnalysis();
+  showScreen('relatorios');
+  toast('Relatório enviado à coordenação com segurança');
+};
+
+/* ===================== reports list ===================== */
+function renderReports(){
+  const wrap = $('#reports-list');
+  if(!state.reports.length){
+    wrap.innerHTML = `<div class="empty">
+      <svg width="46" height="46" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l4 4v14H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="#c4b5fd" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v4h4" stroke="#c4b5fd" stroke-width="1.6"/></svg>
+      <p style="font-weight:700;color:var(--ink-soft);margin:4px 0 2px;">Nenhum relatório ainda</p>
+      <p style="font-size:12.5px;margin:0;">Registre uma prova em <b style="color:var(--violet-600)">Análises</b> para começar.</p>
+    </div>`;
+    return;
+  }
+  wrap.innerHTML = state.reports.map((r,i)=>`
+    <button class="report-item" data-report="${i}">
+      <span class="rico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l4 4v14H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3v4h4M9.5 13h5M9.5 16.5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+      <span class="meta"><b>${r.proto}</b><span>${r.datetime}</span></span>
+      <span class="tag-status">Enviado</span>
+    </button>`).join('');
+  $$('[data-report]', wrap).forEach(b=> b.onclick = ()=> openDoc(state.reports[+b.dataset.report]));
+}
+
+/* ===================== technical report modal ===================== */
+function openDoc(r){
+  $('#doc-proto').textContent = r.proto;
+  $('#doc-datetime').textContent = r.datetime;
+  $('#doc-hash').textContent = r.hash;
+  $('#doc-relato').textContent = '“'+r.relato+'”';
+  openModal('#doc-modal');
+}
+$('#open-doc').onclick = ()=>{
+  const r = state.reports[0] || demoReport();
+  openDoc(r);
+};
+
+/* ===================== escola sync ===================== */
+function updateEscola(r){
+  $('#alert-id').textContent = 'Protocolo '+r.proto;
+  $('#alert-hash').textContent = r.hash.slice(0,28)+'…';
+  $('#alert-time').textContent = r.datetime;
+  $('#alert-relato').textContent = '“'+r.relato+'”';
+}
+function demoReport(){
+  return { proto:'SG-2026-0184', hash:randomHash(), datetime: nowStamp(),
+    relato:'Criaram uma montagem minha e estão espalhando no grupo da turma. Tenho medo de ir à aula.' };
+}
+
+/* ===================== protocol checklist ===================== */
+const protoSteps = $$('#proto-list .proto-step');
+let protoDone = 0;
+protoSteps.forEach(step=>{
+  step.onclick = ()=>{
+    step.classList.toggle('done');
+    protoDone = $$('#proto-list .proto-step.done').length;
+    $('#proto-prog').textContent = protoDone+' / 5';
+    $('#proto-bar').style.width = (protoDone/5*100)+'%';
+    if(protoDone===5) toast('Protocolo concluído · aluna acolhida 💜');
+  };
+});
+
+/* ===================== modals ===================== */
+function openModal(sel){ $(sel).classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModals(){ $$('.modal').forEach(m=>m.classList.remove('open')); document.body.style.overflow=''; }
+$$('[data-close]').forEach(el=> el.onclick = closeModals);
+$('#use-demo'); // noop guard
+$$('[data-open-rights]').forEach(b=> b.onclick = ()=> openModal('#rights-modal'));
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModals(); });
+
+/* ===================== init ===================== */
+(function init(){
+  // seed the escola panel with a demonstrative alert
+  const seed = demoReport();
+  updateEscola(seed);
+  renderReports();
+})();
+</script>
+</body>
+</html>
