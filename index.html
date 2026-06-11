@@ -437,6 +437,40 @@ body{
 .tbtn.prev:disabled{opacity:.4; cursor:not-allowed;}
 .tbtn.exit{background:none; color:var(--ink-faint); padding:11px 10px;}
 .tbtn.exit:hover{color:var(--danger);}
+
+/* ===== seção de conscientização (iceberg) ===== */
+.aware{position:relative; margin-top:46px; border-radius:32px; overflow:hidden; padding:48px 40px; color:#fff;
+  background:linear-gradient(160deg, var(--violet-800) 0%, var(--violet-900) 55%, var(--violet-950) 100%);
+  box-shadow:var(--shadow-lg);}
+.aware .a-head{max-width:700px; margin:0 auto 36px; text-align:center;}
+.aware .a-head .eyebrow{color:var(--mint-300);}
+.aware h2{font-family:var(--font-display); font-weight:700; font-size:clamp(25px,3.3vw,37px); line-height:1.1; margin:10px 0 14px;}
+.aware .a-sub{font-size:15.5px; line-height:1.62; color:#e7e1fb; margin:0;}
+.aware-grid{display:grid; grid-template-columns:290px 1fr; gap:40px; align-items:center; max-width:860px; margin:0 auto;}
+@media (max-width:760px){ .aware{padding:38px 22px;} .aware-grid{grid-template-columns:1fr; gap:22px;} .berg{max-width:230px; margin:0 auto;} }
+.berg{width:100%; height:auto; display:block; filter:drop-shadow(0 24px 42px rgba(0,0,0,.4));}
+.grp-title{display:inline-block; font-size:11.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; margin-bottom:11px;}
+.berg-grp.visible .grp-title{color:var(--mint-300);}
+.berg-grp.deep .grp-title{color:var(--violet-300);}
+.berg-grp ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px;}
+.berg-grp li{font-size:14px; font-weight:600; padding:10px 14px; border-radius:12px; display:flex; align-items:center; gap:11px;}
+.berg-grp.visible li{background:rgba(94,234,212,.14); border:1px solid rgba(94,234,212,.32); color:#eafcf7;}
+.berg-grp.deep li{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.13); color:#e7e1fb;}
+.berg-grp li .d{width:6px; height:6px; border-radius:50%; flex:0 0 6px;}
+.berg-grp.visible li .d{background:var(--mint-300);}
+.berg-grp.deep li .d{background:var(--violet-400);}
+.berg-divider{display:flex; align-items:center; gap:12px; margin:16px 0; color:rgba(255,255,255,.55); font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase;}
+.berg-divider::before,.berg-divider::after{content:""; height:1px; flex:1; background:linear-gradient(90deg,transparent,rgba(94,234,212,.55),transparent);}
+.aware-stats{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; max-width:760px; margin:42px auto 0;}
+@media (max-width:680px){ .aware-stats{grid-template-columns:1fr;} }
+.astat{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.13); border-radius:18px; padding:20px; text-align:center;}
+.astat b{display:block; font-family:var(--font-display); font-weight:700; font-size:33px; color:var(--mint-300); line-height:1;}
+.astat span{display:block; font-size:12.5px; color:#e7e1fb; margin-top:8px; line-height:1.4;}
+.aware-src{text-align:center; font-size:11.5px; color:rgba(255,255,255,.55); margin-top:14px;}
+.aware-close{max-width:620px; margin:36px auto 0; text-align:center; padding-top:30px; border-top:1px solid rgba(255,255,255,.13);}
+.aware-close h3{font-family:var(--font-display); font-weight:700; font-size:23px; margin:0 0 12px; color:#fff;}
+.aware-close p{font-size:15px; line-height:1.66; color:#e7e1fb; margin:0 0 18px;}
+.aware-close .final{display:inline-block; font-family:var(--font-display); font-weight:600; font-size:16.5px; color:var(--mint-300); background:rgba(94,234,212,.12); padding:10px 20px; border-radius:999px;}
 </style>
 </head>
 <body>
@@ -859,6 +893,69 @@ body{
         <div class="fam-progress" id="fam-progress">0 de 4 plataformas notificadas</div>
         <div class="legal-note"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" style="flex:0 0 17px"><path d="M12 8v5m0 3h.01" stroke="#6d28d9" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#6d28d9" stroke-width="1.7"/></svg><span><b>Art. 21 do Marco Civil:</b> mediante notificação, o provedor deve remover o conteúdo de nudez não consensual de forma diligente, sob pena de responsabilização.</span></div>
       </div>
+    </div>
+  </section>
+
+  <!-- ===================== CONSCIENTIZAÇÃO · ICEBERG ===================== -->
+  <section class="aware">
+    <div class="a-head">
+      <span class="eyebrow">Conscientização</span>
+      <h2>A montagem é a ponta. O machismo é o iceberg inteiro.</h2>
+      <p class="a-sub">O SafeGraph protege uma menina na parte de cima, a que todo mundo vê. Mas a violência que cria essas imagens não nasce na tecnologia. Ela nasce numa cultura que há muito tempo trata o corpo da mulher como objeto.</p>
+    </div>
+
+    <div class="aware-grid">
+      <svg class="berg" viewBox="0 0 380 400" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="iceTop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e7defd"/></linearGradient>
+          <linearGradient id="iceBot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cdbcf6"/><stop offset="1" stop-color="#6d4fc4"/></linearGradient>
+          <linearGradient id="waterG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5eead4" stop-opacity=".28"/><stop offset="1" stop-color="#2dd4bf" stop-opacity=".04"/></linearGradient>
+          <clipPath id="bergClip"><path d="M198 30 L242 150 L298 214 L282 300 L205 374 L120 322 L108 232 L162 150 Z"/></clipPath>
+        </defs>
+        <path d="M198 30 L242 150 L298 214 L282 300 L205 374 L120 322 L108 232 L162 150 Z" fill="url(#iceBot)"/>
+        <path d="M198 30 L242 150 L162 150 Z" fill="url(#iceTop)"/>
+        <g clip-path="url(#bergClip)" stroke="#ffffff" stroke-opacity=".22" stroke-width="2" fill="none">
+          <path d="M198 30 L205 374"/><path d="M162 150 L282 300"/><path d="M242 150 L120 322"/><path d="M108 232 L298 214"/>
+        </g>
+        <g clip-path="url(#bergClip)"><rect x="0" y="150" width="380" height="250" fill="#2dd4bf" opacity=".2"/></g>
+        <path d="M0 150 Q95 142 190 150 T380 150 L380 400 L0 400 Z" fill="url(#waterG)"/>
+        <path d="M0 150 Q95 142 190 150 T380 150" stroke="#5eead4" stroke-width="3" fill="none" opacity=".85"/>
+      </svg>
+
+      <div class="berg-labels">
+        <div class="berg-grp visible">
+          <span class="grp-title">O que se vê</span>
+          <ul>
+            <li><span class="d"></span>Deepfakes e montagens</li>
+            <li><span class="d"></span>Nudes falsos no grupo da escola</li>
+            <li><span class="d"></span>Humilhação em público</li>
+          </ul>
+        </div>
+        <div class="berg-divider">linha d'água</div>
+        <div class="berg-grp deep">
+          <span class="grp-title">O que sustenta, embaixo</span>
+          <ul>
+            <li><span class="d"></span>"Ah, foi só brincadeira"</li>
+            <li><span class="d"></span>A culpa jogada na vítima</li>
+            <li><span class="d"></span>O corpo da mulher como objeto</li>
+            <li><span class="d"></span>O medo que faz a vítima calar</li>
+            <li><span class="d"></span>Desigualdade que vem de longe</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="aware-stats">
+      <div class="astat"><b>99%</b><span>das vítimas de deepfake pornográfico são mulheres</span></div>
+      <div class="astat"><b>95%</b><span>do assédio online tem mulheres como alvo</span></div>
+      <div class="astat"><b>1 em 3</b><span>mulheres já sofreu violência física ou sexual</span></div>
+    </div>
+    <p class="aware-src">Fontes: ONU Mulheres, OMS e Amnesty International.</p>
+
+    <div class="aware-close">
+      <h3>Nenhum app resolve machismo sozinho.</h3>
+      <p>O SafeGraph cuida de uma ponta. Ele guarda a prova, acolhe a aluna e devolve o controle pra ela. O resto do iceberg não derrete com tecnologia. Derrete com educação e com conversa, dentro de casa e na escola. E quando a gente para de chamar violência de brincadeira.</p>
+      <span class="final">A mudança começa embaixo da superfície.</span>
     </div>
   </section>
 
